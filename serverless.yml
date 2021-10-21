@@ -1,0 +1,28 @@
+service:
+  name: medcloud-first-try
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: sa-east-1
+  stage: dev
+
+plugins:
+  - serverless-offline
+  - serverless-webpack
+
+functions:
+  listPatients:
+    handler: src/functions/listPatients.handle
+    events:
+      - http:
+          path: /listPatients
+          method: get
+          cors: true
+  getPatient:
+    handler: src/functions/getPatient.handle
+    events:
+      - http:
+          path: /getPatient/{patientId}
+          method: get
+          cors: true
