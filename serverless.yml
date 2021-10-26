@@ -1,15 +1,27 @@
 service:
   name: medcloud-first-try
 
+
 provider:
   name: aws
   runtime: nodejs14.x
   region: sa-east-1
   stage: dev
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+        - dynamodb:UpdateItem
+      Resource: arn:aws:dynamodb:sa-east-1:070183435337:table/patients
+
 
 plugins:
   - serverless-offline
   - serverless-webpack
+
 
 functions:
   listPatients:
@@ -26,3 +38,41 @@ functions:
           path: /getPatient/{patientId}
           method: get
           cors: true
+  registerPatient:
+    handler: src/functions/registerPatient.handle
+    events:
+      - http:
+          path: /registerPatient
+          method: post
+          cors: true
+  updatePatient:
+    handler: src/functions/updatePatient.handle
+    events:
+      - http:
+          path: /updatePatient/{patientId}
+          method: put
+          cors: true
+  deletePatient:
+    handler: src/functions/deletePatient.handle
+    events:
+      - http:
+          path: /deletePatient/{patientId}
+          method: delete
+          cors: true
+
+
+resources:
+  Resources:
+    PatientsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: patients
+        AttributeDefinitions:
+          - AttributeName: patient_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: patient_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

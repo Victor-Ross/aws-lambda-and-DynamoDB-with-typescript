@@ -4,19 +4,24 @@ import { DynamoDB } from 'aws-sdk';
 
 
 export const handle: APIGatewayProxyHandler = async (event) => {
-
-  const dynamoDb = new DynamoDB.DocumentClient();
-
   try {
-    let data = await dynamoDb.scan({
-      TableName: 'patients'
+    const { patientId } = event.pathParameters;
+
+    const dynamodb = new DynamoDB.DocumentClient();
+
+    await dynamodb.delete({
+      TableName: 'patients',
+      Key: {
+        patient_id: patientId
+      },
+      ConditionExpression: 'attribute_exists(patient_id)'
     }).promise();
 
     return {
-      statusCode: 200,
-      body: JSON.stringify(data.Items)
+      statusCode: 204,
+      body: JSON.stringify({ message: 'Paciente deletado com sucesso.' })
     }
-
+    
   } catch (error) {
     console.error(error);
 
